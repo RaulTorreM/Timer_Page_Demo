@@ -76,6 +76,14 @@
 
 Español directo, de mesa de producción: “Guardar cambios”, “Cambios sin guardar”, “Últimos segundos”. Sin signos de admiración ni promesas. Las etiquetas nombran la acción o el dato.
 
+## Pared de instituciones (`/logos`)
+
+- Sin texto visible: solo cuatro marcas sobre un campo de piedra cálida (`#E5DCCB` al centro, `#ADA08A` en los bordes).
+- Diseño de fondo: retícula de puntos, dos anillos concéntricos, una barra roja al borde izquierdo, marcas de registro en las esquinas y una luz cálida que deriva lentamente.
+- Los logos van recortados, con fondo transparente y sombra propia (`drop-shadow`), de modo que se separan del campo sin placas ni tarjetas.
+- Movimiento: flotación de `1.15vh` con escala `1.026` y una inclinación mínima, en duraciones de 12–16,5 s; cada logo tiene un halo que respira en contrafase. El cursor se oculta a los 3 s.
+- Sin controles ni interacción: es una pantalla de fondo.
+
 ## Accesibilidad
 
 - Contraste AA en texto del panel; texto de escenario a 60 % de hueso sobre tinta supera 4.5:1.

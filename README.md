@@ -6,6 +6,7 @@ Cronómetro en vivo para un evento de debate, con **dos pantallas**:
 | --- | --- | --- |
 | Timer | `/timer` | Se proyecta al público. Muestra la cuenta regresiva, alerta roja en los últimos segundos y el flyer al finalizar. |
 | Control | `/control` | Panel del operador. Configura el tiempo, inicia/pausa, reinicia, cambia al flyer y sube la imagen. |
+| Logos | `/logos` | Pared de instituciones sobre papel, sin controles. |
 
 Todo se sincroniza **en tiempo real** por WebSocket (Socket.IO): lo que haces en el panel se refleja en el proyector sin recargar la página, incluso si están en equipos distintos de la misma red.
 
@@ -25,6 +26,7 @@ Luego abre:
 
 - Timer: <http://localhost:4000/timer>
 - Control: <http://localhost:4000/control>
+- Logos: <http://localhost:4000/logos>
 
 `npm run serve` hace el build y arranca el servidor en un solo paso.
 
@@ -150,11 +152,12 @@ debate-timer-cch/
 ├── client/                 React 19 + Vite + React Router
 │   ├── public/             Archivos estáticos opcionales (ej. flyer.jpg)
 │   └── src/
-│       ├── pages/          TimerPage.jsx · ControlPage.jsx
+│       ├── pages/          TimerPage.jsx · ControlPage.jsx · LogosPage.jsx
 │       ├── components/     FlyerLayer · LivePreview
 │       ├── hooks/          useDebateState · useTicker · useStageTransition
 │       ├── lib/            socket.js · time.js
-│       ├── styles/         global.css · timer.css · control.css
+│       ├── styles/         global.css · timer.css · control.css · logos.css
+│       ├── logos.js        Instituciones de la pared de logos
 │       └── config.js       Textos del evento
 ├── server/                 Express + Socket.IO
 │   ├── src/index.js        API, uploads y eventos en tiempo real
@@ -164,9 +167,27 @@ debate-timer-cch/
 └── package.json            Scripts raíz (workspaces)
 ```
 
+Los logos de la pared institucional viven en `client/public/logos/`.
+
 ---
 
-## 8. Cómo funciona el tiempo
+## 8. Página de instituciones
+
+`/logos` es una pared con las cuatro instituciones, sin controles ni texto visible: solo las marcas, la piedra y la luz.
+
+- Ya están integrados los cuatro logos en `client/public/logos/`:
+  - Cámara de Comercio y Producción de Huancayo.
+  - Colegio de Periodistas del Perú — Filial Junín.
+  - Competitividad Empresarial Junín, Perú.
+  - 15-5 TV.
+- Fondo de piedra cálida con anillos, retícula de puntos, una marca roja y marcas de registro en las esquinas.
+- Las marcas flotan y respiran con duraciones distintas; el fondo tiene una luz que se desplaza lentamente.
+- Los logos se recortaron y se les retiró el fondo; el de la Cámara conserva su anillo blanco.
+- Para reemplazar un logo, sustituye el archivo en `client/public/logos/` o ajusta `name` y `src` en `client/src/logos.js`, y vuelve a compilar.
+- Se abre desde el panel con “Abrir pared de instituciones” o directamente en `/logos`.
+- El cursor se oculta a los 3 segundos de inactividad.
+
+## 9. Cómo funciona el tiempo
 
 El servidor guarda `endsAt` (momento exacto de finalización). Cada pantalla recibe un snapshot con el tiempo restante y lo interpola localmente con `requestAnimationFrame`, por lo que el conteo se ve fluido entre actualizaciones. Cada 10 segundos el servidor reenvía el estado para corregir cualquier deriva.
 

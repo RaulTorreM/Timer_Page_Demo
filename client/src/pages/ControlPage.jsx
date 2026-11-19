@@ -8,11 +8,11 @@ import { CONTROL, EVENT } from '../config.js';
 import '../styles/control.css';
 
 const TIME_PRESETS = [
+  { label: '30 seg', seconds: 30 },
   { label: '1 min', seconds: 60 },
-  { label: '2 min', seconds: 120 },
   { label: '3 min', seconds: 180 },
+  { label: '4 min', seconds: 240 },
   { label: '5 min', seconds: 300 },
-  { label: '10 min', seconds: 600 },
 ];
 
 const LABEL_PRESETS = [
@@ -294,9 +294,14 @@ export default function ControlPage() {
             <h1>{CONTROL.title}</h1>
             <p className="dateline">{dateline}</p>
           </div>
-          <a className="open-link" href="/timer" target="_blank" rel="noreferrer">
-            Abrir proyección en otra ventana
-          </a>
+          <div className="open-links">
+            <a className="open-link" href="/timer" target="_blank" rel="noreferrer">
+              Abrir proyección en otra ventana
+            </a>
+            <a className="open-link" href="/logos" target="_blank" rel="noreferrer">
+              Abrir pared de instituciones
+            </a>
+          </div>
         </div>
 
         <div className="layout">

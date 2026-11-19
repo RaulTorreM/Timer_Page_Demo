@@ -28,8 +28,8 @@ export function formatDuration(ms) {
 }
 
 export const STATUS_LABELS = {
-  idle: 'Listo para iniciar',
-  running: 'En curso',
-  paused: 'En pausa',
-  finished: 'Tiempo finalizado',
+  idle: '',
+  running: '',
+  paused: '',
+  finished: '',
 };

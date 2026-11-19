@@ -323,7 +323,7 @@
 
 .timer-label {
   margin: 0;
-  font-size: clamp(11px, 1.62vmin, 44px);
+  font-size: clamp(31px, 1.62vmin, 44px);
   font-weight: 650;
   letter-spacing: 0.28em;
   text-transform: uppercase;

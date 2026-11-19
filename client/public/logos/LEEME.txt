@@ -1,0 +1,15 @@
+LOGOS · PARED DE INSTITUCIONES
+==============================
+
+Aquí viven los cuatro logos que aparecen en /logos:
+
+- camara-comercio-huancayo.png
+- colegio-periodistas-peru.png
+- competitividad-empresarial-junin.png
+- 15-5-tv.png
+
+La página no muestra textos: solo las marcas y el fondo de piedra con luz.
+
+Para reemplazar un logo, sustituye el archivo manteniendo el nombre o ajusta
+`name` y `src` en `client/src/logos.js`. Usa PNG con fondo transparente;
+la página ya los recorta y les aplica sombra.

@@ -176,9 +176,7 @@ export default function TimerPage() {
               </div>
             </div>
 
-            <p className={`timer-note ${secondsMode && !isFinished ? 'is-unit' : ''}`}>
-              {note}
-            </p>
+
           </section>
         )}
       </main>
