@@ -27,7 +27,7 @@ export default function LivePreview() {
         className="preview-canvas"
         style={{ width: BASE_WIDTH, height: BASE_HEIGHT, transform: `scale(${scale})` }}
       >
-        <iframe src="/timer" title="Vista previa del timer" tabIndex={-1} loading="lazy" />
+        <iframe src="/timer?preview=1" title="Vista previa del timer" tabIndex={-1} loading="lazy" />
       </div>
     </div>
   );

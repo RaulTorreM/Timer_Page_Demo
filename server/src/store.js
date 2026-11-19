@@ -4,6 +4,7 @@ import path from 'node:path';
 const MINUTE = 60 * 1000;
 const HOUR = 60 * MINUTE;
 const MAX_DURATION = 24 * HOUR;
+const MAX_AUDIO_DURATION = 12 * HOUR;
 
 export const DEFAULT_STATE = {
   label: 'Tiempo de participación',
@@ -15,6 +16,10 @@ export const DEFAULT_STATE = {
   flyerUrl: null,
   audioUrl: null,
   audioName: null,
+  audioStatus: 'idle', // idle | playing | paused | finished
+  audioBasePositionMs: 0,
+  audioStartedAt: null,
+  audioDurationMs: 0,
   warningSeconds: 10,
   autoFlyer: true,
   autoFlyerDelaySeconds: 6,
@@ -71,6 +76,25 @@ export class DebateStore {
       const raw = fs.readFileSync(this.file, 'utf8');
       const parsed = JSON.parse(raw);
       const audioUrl = sanitizeMediaUrl(parsed.audioUrl);
+      const audioStatusRaw = ['idle', 'playing', 'paused', 'finished'].includes(parsed.audioStatus)
+        ? parsed.audioStatus
+        : 'idle';
+      const audioStartedAt =
+        audioUrl && audioStatusRaw === 'playing' && Number.isFinite(Number(parsed.audioStartedAt))
+          ? Number(parsed.audioStartedAt)
+          : null;
+      const audioStatus =
+        !audioUrl
+          ? 'idle'
+          : audioStatusRaw === 'playing' && !audioStartedAt
+            ? 'paused'
+            : audioStatusRaw;
+      const audioDurationMs = audioUrl
+        ? clamp(toNumber(parsed.audioDurationMs, 0), 0, MAX_AUDIO_DURATION)
+        : 0;
+      const audioBasePositionMs = audioUrl
+        ? clamp(toNumber(parsed.audioBasePositionMs, 0), 0, MAX_AUDIO_DURATION)
+        : 0;
       return {
         ...DEFAULT_STATE,
         ...parsed,
@@ -86,6 +110,10 @@ export class DebateStore {
         flyerUrl: sanitizeMediaUrl(parsed.flyerUrl),
         audioUrl,
         audioName: audioUrl ? sanitizeAudioName(parsed.audioName) : null,
+        audioStatus,
+        audioBasePositionMs,
+        audioStartedAt,
+        audioDurationMs,
       };
     } catch {
       return { ...DEFAULT_STATE };
@@ -131,6 +159,24 @@ export class DebateStore {
     if (this.state.status === 'paused') {
       this.state.remainingMs = clamp(this.state.remainingMs, 0, MAX_DURATION);
     }
+
+    if (this.state.audioStatus === 'playing') {
+      const position = this.#audioPosition();
+      if (this.state.audioDurationMs > 0 && position >= this.state.audioDurationMs) {
+        this.state.audioStatus = 'finished';
+        this.state.audioBasePositionMs = this.state.audioDurationMs;
+        this.state.audioStartedAt = null;
+      }
+    }
+  }
+
+  #audioPosition(now = Date.now()) {
+    const duration = this.state.audioDurationMs || MAX_AUDIO_DURATION;
+    const raw =
+      this.state.audioStatus === 'playing' && this.state.audioStartedAt
+        ? this.state.audioBasePositionMs + (now - this.state.audioStartedAt)
+        : this.state.audioBasePositionMs;
+    return clamp(raw, 0, duration);
   }
 
   #clearAutoView() {
@@ -186,10 +232,15 @@ export class DebateStore {
         ? Math.max(0, this.state.endsAt - now)
         : this.state.remainingMs;
 
+    const audioDurationMs = clamp(this.state.audioDurationMs, 0, MAX_AUDIO_DURATION);
+    const audioPositionMs = this.#audioPosition(now);
+
     return {
       ...this.state,
       remainingMs,
       durationMs: Math.max(this.state.durationMs, 1000),
+      audioDurationMs,
+      audioPositionMs,
       serverNow: now,
       clients: this.clients,
     };
@@ -305,6 +356,85 @@ export class DebateStore {
     const audioUrl = sanitizeMediaUrl(url);
     this.state.audioUrl = audioUrl;
     this.state.audioName = audioUrl ? sanitizeAudioName(name) : null;
+    this.state.audioStatus = 'idle';
+    this.state.audioBasePositionMs = 0;
+    this.state.audioStartedAt = null;
+    this.state.audioDurationMs = 0;
     return this.#commit('audio');
+  }
+
+  audioPlay(positionMs = null) {
+    if (!this.state.audioUrl) return this.snapshot();
+    const now = Date.now();
+    const duration = this.state.audioDurationMs || MAX_AUDIO_DURATION;
+    let position =
+      positionMs === null || positionMs === undefined
+        ? this.#audioPosition(now)
+        : toNumber(positionMs, 0);
+
+    if (
+      (positionMs === null || positionMs === undefined) &&
+      this.state.audioStatus === 'finished'
+    ) {
+      position = 0;
+    }
+
+    this.state.audioBasePositionMs = clamp(position, 0, duration);
+    this.state.audioStartedAt = now;
+    this.state.audioStatus = 'playing';
+    return this.#commit('audio-play');
+  }
+
+  audioPause() {
+    if (!this.state.audioUrl) return this.snapshot();
+    this.state.audioBasePositionMs = this.#audioPosition();
+    this.state.audioStartedAt = null;
+    this.state.audioStatus = 'paused';
+    return this.#commit('audio-pause');
+  }
+
+  audioSeek(positionMs) {
+    if (!this.state.audioUrl) return this.snapshot();
+    const duration = this.state.audioDurationMs || MAX_AUDIO_DURATION;
+    const position = clamp(toNumber(positionMs, 0), 0, duration);
+    this.state.audioBasePositionMs = position;
+
+    if (this.state.audioStatus === 'playing') {
+      this.state.audioStartedAt = Date.now();
+    } else {
+      this.state.audioStartedAt = null;
+      this.state.audioStatus =
+        this.state.audioDurationMs > 0 && position >= this.state.audioDurationMs
+          ? 'finished'
+          : 'paused';
+    }
+
+    return this.#commit('audio-seek');
+  }
+
+  audioEnded() {
+    if (!this.state.audioUrl) return this.snapshot();
+    this.state.audioStatus = 'finished';
+    this.state.audioBasePositionMs =
+      this.state.audioDurationMs || this.#audioPosition();
+    this.state.audioStartedAt = null;
+    return this.#commit('audio-ended');
+  }
+
+  audioSetDuration(ms) {
+    if (!this.state.audioUrl) return this.snapshot();
+    const duration = clamp(Math.round(toNumber(ms, 0)), 0, MAX_AUDIO_DURATION);
+    this.state.audioDurationMs = duration;
+
+    if (duration > 0) {
+      this.state.audioBasePositionMs = clamp(this.state.audioBasePositionMs, 0, duration);
+      if (this.state.audioStatus === 'playing' && this.#audioPosition() >= duration) {
+        this.state.audioStatus = 'finished';
+        this.state.audioBasePositionMs = duration;
+        this.state.audioStartedAt = null;
+      }
+    }
+
+    return this.#commit('audio-duration');
   }
 }

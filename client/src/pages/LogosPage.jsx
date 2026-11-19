@@ -64,7 +64,7 @@ export default function LogosPage() {
 
       <button
         type="button"
-        className="logos-fs"
+        className={`logos-fs ${isFullscreen ? 'is-exit' : ''}`}
         onClick={toggleFullscreen}
         title={
           isFullscreen ? 'Salir de pantalla completa (F o Esc)' : 'Pantalla completa (F)'
@@ -75,14 +75,16 @@ export default function LogosPage() {
             : 'Poner la pantalla en pantalla completa'
         }
       >
-        <svg viewBox="0 0 16 16" aria-hidden="true" focusable="false">
-          <path
-            d={
-              isFullscreen
-                ? 'M7 2v5H2M9 2v5h5M7 14v-5H2M9 14v-5h5'
-                : 'M2 6V2h4M14 6V2h-4M2 10v4h4M14 10v4h-4'
-            }
-          />
+        <svg
+          viewBox={isFullscreen ? '0 0 24 24' : '0 0 16 16'}
+          aria-hidden="true"
+          focusable="false"
+        >
+          {isFullscreen ? (
+            <path d="M5 16h3v3h2v-5H5v2zm3-8H5v2h5V5H8v3zm6 11h2v-3h3v-2h-5v5zm2-11V5h-2v5h5V8h-3z" />
+          ) : (
+            <path d="M2 6V2h4M14 6V2h-4M2 10v4h4M14 10v4h-4" />
+          )}
         </svg>
       </button>
     </div>

@@ -232,6 +232,11 @@ io.on('connection', (socket) => {
   handle(socket, 'view:set', (payload) => store.setView(payload.view));
   handle(socket, 'flyer:set', (payload) => store.setFlyer(payload.url, { show: Boolean(payload.show) }));
   handle(socket, 'audio:set', (payload) => store.setAudio(payload.url, payload.name));
+  handle(socket, 'audio:play', (payload) => store.audioPlay(payload.positionMs ?? null));
+  handle(socket, 'audio:pause', () => store.audioPause());
+  handle(socket, 'audio:seek', (payload) => store.audioSeek(payload.positionMs));
+  handle(socket, 'audio:ended', () => store.audioEnded());
+  handle(socket, 'audio:duration', (payload) => store.audioSetDuration(payload.durationMs));
 
   socket.on('disconnect', () => {
     broadcastClients();

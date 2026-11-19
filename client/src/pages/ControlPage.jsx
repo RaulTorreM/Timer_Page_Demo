@@ -560,6 +560,10 @@ export default function ControlPage() {
             <AudioPanel
               audioUrl={state.audioUrl}
               audioName={state.audioName}
+              audioStatus={state.audioStatus}
+              audioPositionMs={state.audioPositionMs}
+              audioDurationMs={state.audioDurationMs}
+              receivedAt={state.receivedAt}
               connected={connected}
               onToast={pushToast}
             />

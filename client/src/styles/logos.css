@@ -183,6 +183,11 @@
   stroke-linecap: square;
 }
 
+.logos-fs.is-exit svg {
+  fill: currentColor;
+  stroke: none;
+}
+
 .logos-fs:hover {
   opacity: 1;
   background: rgba(20, 18, 14, 0.07);

@@ -317,8 +317,10 @@
 }
 
 .timer-screen .fs-button.is-floating svg {
-  width: 18px;
-  height: 18px;
+  width: 19px;
+  height: 19px;
+  fill: currentColor;
+  stroke: none;
 }
 
 .timer-screen .fs-button.is-floating:hover {
@@ -326,6 +328,63 @@
   background: var(--bone);
   color: var(--ink);
   opacity: 1;
+}
+
+/* ------------------------- activación de audio ---------------------------- */
+
+.audio-unlock {
+  position: fixed;
+  left: 50%;
+  bottom: clamp(18px, 3.4vh, 38px);
+  z-index: 8;
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 16px;
+  border: 1px solid rgba(246, 241, 231, 0.32);
+  border-radius: 2px;
+  background: rgba(18, 16, 12, 0.82);
+  color: var(--bone);
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  cursor: pointer;
+  backdrop-filter: blur(10px);
+  transform: translateX(-50%);
+  animation: unlock-in 0.35s ease both;
+}
+
+.audio-unlock svg {
+  width: 15px;
+  height: 15px;
+  flex: none;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 1.5;
+  stroke-linecap: square;
+}
+
+.audio-unlock:hover {
+  border-color: var(--bone);
+  background: var(--bone);
+  color: var(--ink);
+}
+
+.audio-unlock:focus-visible {
+  outline: 2px solid var(--bone);
+  outline-offset: 3px;
+}
+
+@keyframes unlock-in {
+  from {
+    opacity: 0;
+    transform: translate(-50%, 8px);
+  }
+  to {
+    opacity: 1;
+    transform: translate(-50%, 0);
+  }
 }
 
 .is-warning .fs-button {

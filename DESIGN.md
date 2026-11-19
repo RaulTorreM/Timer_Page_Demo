@@ -55,9 +55,10 @@
 
 ### Audio
 
-- Reproductor dentro de la misma hoja: nombre y estado, tiempo actual grande, duración pequeña y barra de 2 px con pulgar rojo.
-- Botón principal en tinta; −10 s, +10 s y Reiniciar; campo **Iniciar en** con filete inferior para saltar a un tiempo exacto.
-- La reproducción es local al panel; el archivo vive en el servidor y se recuerda entre sesiones.
+- El panel **no reproduce**: envía play, pausa y posición por WebSocket, y el audio suena en `/timer`.
+- La posición vive en el servidor (base + instante de inicio) y se interpola en ambas pantallas; la barra del panel y el audio real se corrigen mutuamente.
+- Si el navegador bloquea el autoplay, el timer muestra un aviso discreto **Activar audio**; un gesto allí habilita el control remoto.
+- La vista previa del panel carga el timer con `?preview=1` y no monta el audio: una sola salida de sonido.
 
 ## Movimiento
 

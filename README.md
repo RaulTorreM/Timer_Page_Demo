@@ -5,7 +5,7 @@ Cronómetro en vivo para un evento de debate, con **tres pantallas**:
 | Pantalla | URL | Uso |
 | --- | --- | --- |
 | Timer | `/timer` | Se proyecta al público. Muestra la cuenta regresiva, alerta roja en los últimos segundos y el flyer al finalizar. |
-| Control | `/control` | Panel del operador. Configura el tiempo, inicia/pausa, reinicia, cambia al flyer, sube el flyer y reproduce audio. |
+| Control | `/control` | Panel del operador. Configura el tiempo, inicia/pausa, reinicia, cambia al flyer, sube el flyer y controla el audio de la pantalla. |
 | Logos | `/logos` | Pared de instituciones sobre papel, sin controles. |
 
 Todo se sincroniza **en tiempo real** por WebSocket (Socket.IO): lo que haces en el panel se refleja en el proyector sin recargar la página, incluso si están en equipos distintos de la misma red.
@@ -94,13 +94,15 @@ La transición también se usa al cambiar manualmente entre timer y flyer, y al 
 
 ## 4. Audio
 
-El panel también funciona como reproductor de audio, con subida y control desde la misma hoja.
+El panel funciona como mando del audio: el archivo se reproduce en la **pantalla del timer**, no en el panel.
 
 - **Subir:** MP3, M4A, MP4 (aunque sea un video, se reproduce su audio), WAV, OGG o AAC, hasta 100 MB. El archivo se guarda en `server/uploads/` y el panel recuerda cuál está seleccionado.
-- **Reproducir / pausar:** botón principal del reproductor. También hay **−10 s**, **+10 s** y **Reiniciar**.
-- **Cambiar dónde empieza:** arrastra la barra de progreso o escribe un tiempo exacto en **“Iniciar en”** (`0:30`, `1:15` o `90` segundos) y pulsa **Ir**. Al pulsar reproducir, empieza desde ahí.
-- **Dónde suena:** se reproduce en el equipo donde está abierto el panel de control, no en la pantalla del timer. Conecta la salida de audio de ese equipo a la mesa de sonido. Si necesitas que suene desde el equipo de proyección, se puede mover a esa pantalla.
-- La reproducción es local: si recargas el panel, vuelve a pulsar reproducir. El archivo seleccionado sí queda guardado.
+- **Reproducir / pausar:** desde el panel. También hay **−10 s**, **+10 s** y **Reiniciar**.
+- **Cambiar dónde empieza:** arrastra la barra o escribe un tiempo exacto en **“Iniciar en”** (`0:30`, `1:15` o `90` segundos) y pulsa **Ir**. La reproducción salta ahí en la pantalla.
+- **Dónde suena:** en el equipo que tiene abierta la pantalla del timer y proyecta el evento. Conecta la salida de audio de ese equipo a la mesa de sonido. La vista previa del panel permanece en silencio para no duplicar el sonido.
+- **Activación:** por las políticas de los navegadores, el sonido puede requerir un gesto en la pantalla. Si pulsas reproducir y no suena, aparece un botón discreto **ACTIVAR AUDIO** en la parte inferior del timer; púlsalo una vez y el panel toma el control.
+- La pantalla del timer debe estar abierta para que se escuche. Si no lo está, el panel muestra “Cargando en la pantalla…” hasta que la pantalla cargue el archivo.
+- La posición y el estado se guardan en el servidor: si recargas el panel, la reproducción continúa en la pantalla; si recargas la pantalla, se resincroniza.
 
 ## 5. Personalizar el evento
 
@@ -164,7 +166,7 @@ debate-timer-cch/
 │   └── src/
 │       ├── pages/          TimerPage.jsx · ControlPage.jsx · LogosPage.jsx
 │       ├── components/     FlyerLayer · AudioPanel · LivePreview
-│       ├── hooks/          useDebateState · useTicker · useStageTransition
+│       ├── hooks/          useDebateState · useTicker · useStageTransition · useFullscreen
 │       ├── lib/            socket.js · time.js
 │       ├── styles/         global.css · timer.css · control.css · logos.css
 │       ├── logos.js        Instituciones de la pared de logos

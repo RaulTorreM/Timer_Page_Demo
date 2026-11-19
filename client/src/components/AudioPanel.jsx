@@ -1,4 +1,5 @@
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
+import { useTicker } from '../hooks/useTicker.js';
 import { request } from '../lib/socket.js';
 
 const MAX_SIZE = 100 * 1024 * 1024;
@@ -28,41 +29,91 @@ function parseTime(value) {
   return numbers[0] * 3600 + numbers[1] * 60 + numbers[2];
 }
 
-export default function AudioPanel({ audioUrl, audioName, connected, onToast }) {
-  const audioRef = useRef(null);
+export default function AudioPanel({
+  audioUrl,
+  audioName,
+  audioStatus,
+  audioPositionMs,
+  audioDurationMs,
+  receivedAt,
+  connected,
+  onToast,
+}) {
   const fileInputRef = useRef(null);
-  const errorToastRef = useRef(false);
-
-  const [playing, setPlaying] = useState(false);
-  const [current, setCurrent] = useState(0);
-  const [duration, setDuration] = useState(0);
   const [uploading, setUploading] = useState(false);
   const [removing, setRemoving] = useState(false);
   const [startValue, setStartValue] = useState('00:00');
-  const [loadError, setLoadError] = useState(false);
+  const [scrub, setScrub] = useState(null);
 
-  const audioReady = duration > 0 && !loadError;
-  const progress = duration > 0 ? Math.min(100, Math.max(0, (current / duration) * 100)) : 0;
+  const isPlaying = audioStatus === 'playing';
+  const tick = useTicker(isPlaying, 12);
+  const durationMs = Math.max(0, Number(audioDurationMs) || 0);
+  const ready = Boolean(audioUrl) && durationMs > 0;
 
   useEffect(() => {
-    const audio = audioRef.current;
-    if (!audio) return;
-    audio.pause();
-    setPlaying(false);
-    setCurrent(0);
-    setDuration(0);
-    setLoadError(false);
     setStartValue('00:00');
-    errorToastRef.current = false;
-    if (audioUrl) audio.load();
+    setScrub(null);
   }, [audioUrl]);
 
-  useEffect(
-    () => () => {
-      audioRef.current?.pause();
-    },
-    [],
-  );
+  const positionMs = useMemo(() => {
+    if (!audioUrl) return 0;
+    const base = Math.max(0, Number(audioPositionMs) || 0);
+    if (!isPlaying) return Math.min(base, durationMs || base);
+    const live = base + Math.max(0, tick - (Number(receivedAt) || 0));
+    return Math.min(live, durationMs || live);
+  }, [audioUrl, isPlaying, audioPositionMs, durationMs, tick, receivedAt]);
+
+  const shownPosition = scrub ?? positionMs;
+  const progress = durationMs > 0 ? Math.min(100, Math.max(0, (shownPosition / durationMs) * 100)) : 0;
+
+  const send = async (event, payload = {}) => {
+    if (!connected) {
+      onToast('Sin conexión con el servidor.', 'error');
+      return null;
+    }
+    const response = await request(event, payload);
+    if (!response?.ok) {
+      onToast(response?.error || 'No se pudo controlar el audio.', 'error');
+      return null;
+    }
+    return response;
+  };
+
+  const togglePlay = () => {
+    if (!ready) return;
+    if (isPlaying) {
+      send('audio:pause');
+      return;
+    }
+    const from = audioStatus === 'finished' ? 0 : Math.round(positionMs);
+    send('audio:play', { positionMs: from });
+  };
+
+  const seekTo = (value) => {
+    if (!ready) return;
+    const next = Math.min(Math.max(0, Math.round(Number(value) || 0)), durationMs);
+    setScrub(null);
+    send('audio:seek', { positionMs: next });
+  };
+
+  const commitScrub = () => {
+    if (scrub !== null) seekTo(scrub);
+  };
+
+  const jumpToStart = () => {
+    const parsed = parseTime(startValue);
+    if (parsed === null) {
+      onToast('Escribe un tiempo válido: 0:30, 1:15 o 90.', 'error');
+      return;
+    }
+    if (!ready) {
+      onToast('El audio todavía se está cargando en la pantalla.', 'error');
+      return;
+    }
+    const ms = Math.min(parsed * 1000, durationMs);
+    seekTo(ms);
+    setStartValue(formatTime(ms / 1000));
+  };
 
   const openPicker = () => fileInputRef.current?.click();
 
@@ -95,7 +146,7 @@ export default function AudioPanel({ audioUrl, audioName, connected, onToast }) 
       if (!response.ok || !payload.ok) {
         throw new Error(payload.error || 'No se pudo subir el audio.');
       }
-      onToast('Audio cargado. Pulsa reproducir cuando quieras.');
+      onToast('Audio cargado. Ya está disponible en la pantalla del timer.');
     } catch (error) {
       onToast(error.message, 'error');
     } finally {
@@ -105,7 +156,7 @@ export default function AudioPanel({ audioUrl, audioName, connected, onToast }) 
 
   const removeAudio = async () => {
     if (!audioUrl || removing) return;
-    if (!window.confirm('¿Quitar el audio del panel?')) return;
+    if (!window.confirm('¿Quitar el audio del panel y de la pantalla?')) return;
 
     setRemoving(true);
     const response = await request('audio:set', { url: null, name: null });
@@ -117,70 +168,24 @@ export default function AudioPanel({ audioUrl, audioName, connected, onToast }) 
     }
   };
 
-  const handleMetadata = () => {
-    const audio = audioRef.current;
-    if (!audio) return;
-    setDuration(Number.isFinite(audio.duration) ? audio.duration : 0);
-    setLoadError(false);
-  };
-
-  const togglePlay = () => {
-    const audio = audioRef.current;
-    if (!audio || !audioUrl || loadError) return;
-
-    if (audio.paused) {
-      if (Number.isFinite(audio.duration) && audio.currentTime >= audio.duration - 0.05) {
-        audio.currentTime = 0;
-        setCurrent(0);
-      }
-      audio.play().catch(() => {
-        onToast('El navegador no pudo iniciar el audio. Pulsa de nuevo.', 'error');
-      });
-    } else {
-      audio.pause();
-    }
-  };
-
-  const seekTo = (value) => {
-    const audio = audioRef.current;
-    if (!audio || !audioUrl) return;
-    const max = Number.isFinite(audio.duration) ? audio.duration : duration;
-    const next = Math.min(Math.max(0, Number(value) || 0), max || 0);
-    audio.currentTime = next;
-    setCurrent(next);
-  };
-
-  const jumpToStart = () => {
-    const parsed = parseTime(startValue);
-    if (parsed === null) {
-      onToast('Escribe un tiempo válido: 0:30, 1:15 o 90.', 'error');
-      return;
-    }
-    if (!audioReady) {
-      onToast('El audio todavía se está cargando.', 'error');
-      return;
-    }
-    const next = Math.min(parsed, duration);
-    seekTo(next);
-    setStartValue(formatTime(next));
-  };
-
-  const handleError = () => {
-    if (!audioUrl) return;
-    setLoadError(true);
-    setPlaying(false);
-    if (!errorToastRef.current) {
-      errorToastRef.current = true;
-      onToast('No se pudo cargar el audio. Revisa el formato del archivo.', 'error');
-    }
-  };
+  const stateLabel = isPlaying
+    ? 'En reproducción'
+    : audioStatus === 'paused'
+      ? 'En pausa'
+      : audioStatus === 'finished'
+        ? 'Finalizado'
+        : ready
+          ? 'Listo para reproducir'
+          : audioUrl
+            ? 'Cargando en la pantalla…'
+            : '';
 
   return (
     <section className="block">
       <div className="block-head">
         <h2>Audio</h2>
-        <span className={`tag ${audioUrl ? (loadError ? 'is-dirty' : 'is-clean') : ''}`}>
-          {audioUrl ? (loadError ? 'Revisar' : 'Cargado') : 'Sin audio'}
+        <span className={`tag ${audioUrl ? 'is-clean' : ''}`}>
+          {audioUrl ? 'Cargado' : 'Sin audio'}
         </span>
       </div>
 
@@ -203,8 +208,8 @@ export default function AudioPanel({ audioUrl, audioName, connected, onToast }) 
             {uploading ? 'Subiendo…' : 'Subir audio'}
           </button>
           <p className="help">
-            MP3, M4A, MP4, WAV u OGG · hasta 100 MB. Se reproduce en el equipo donde está
-            abierto este panel.
+            MP3, M4A, MP4, WAV u OGG · hasta 100 MB. Se reproduce en la pantalla del timer;
+            desde aquí solo lo controlas.
           </p>
         </div>
       ) : (
@@ -212,19 +217,9 @@ export default function AudioPanel({ audioUrl, audioName, connected, onToast }) 
           <div className="audio-file">
             <div className="audio-file-name">
               <strong title={audioName || 'Audio'}>{audioName || 'Audio cargado'}</strong>
-              <span className={`audio-file-state ${playing ? 'is-playing' : ''}`}>
-                {playing ? (
-                  <>
-                    <span className="audio-live-dot" aria-hidden="true" />
-                    En reproducción
-                  </>
-                ) : audioReady ? (
-                  'Listo para reproducir'
-                ) : loadError ? (
-                  'No se pudo cargar'
-                ) : (
-                  'Cargando…'
-                )}
+              <span className={`audio-file-state ${isPlaying ? 'is-playing' : ''}`}>
+                {isPlaying && <span className="audio-live-dot" aria-hidden="true" />}
+                {stateLabel}
               </span>
             </div>
 
@@ -246,27 +241,10 @@ export default function AudioPanel({ audioUrl, audioName, connected, onToast }) 
             </button>
           </div>
 
-          <audio
-            ref={audioRef}
-            src={audioUrl}
-            preload="metadata"
-            onLoadedMetadata={handleMetadata}
-            onDurationChange={handleMetadata}
-            onTimeUpdate={() => setCurrent(audioRef.current?.currentTime || 0)}
-            onPlay={() => setPlaying(true)}
-            onPause={() => setPlaying(false)}
-            onEnded={() => {
-              setPlaying(false);
-              setCurrent(audioRef.current?.duration || 0);
-            }}
-            onError={handleError}
-            hidden
-          />
-
           <div className="audio-player">
             <div className="audio-times">
-              <span className="audio-current">{formatTime(current)}</span>
-              <span className="audio-total">{formatTime(duration)}</span>
+              <span className="audio-current">{formatTime(shownPosition / 1000)}</span>
+              <span className="audio-total">{formatTime(durationMs / 1000)}</span>
             </div>
 
             <div className="audio-scrub">
@@ -274,13 +252,17 @@ export default function AudioPanel({ audioUrl, audioName, connected, onToast }) 
               <input
                 type="range"
                 min="0"
-                max={duration || 1}
-                step="0.1"
-                value={Math.min(current, duration || 0)}
-                onChange={(event) => seekTo(event.target.value)}
+                max={Math.max(durationMs, 1)}
+                step="100"
+                value={Math.min(shownPosition, Math.max(durationMs, 1))}
+                onChange={(event) => setScrub(Number(event.target.value))}
+                onPointerUp={commitScrub}
+                onTouchEnd={commitScrub}
+                onKeyUp={commitScrub}
+                onBlur={commitScrub}
                 className="audio-range"
                 aria-label="Posición del audio"
-                disabled={!audioReady}
+                disabled={!ready}
               />
             </div>
 
@@ -289,31 +271,31 @@ export default function AudioPanel({ audioUrl, audioName, connected, onToast }) 
                 type="button"
                 className="audio-play"
                 onClick={togglePlay}
-                disabled={!audioReady}
+                disabled={!ready || !connected}
               >
                 <svg viewBox="0 0 16 16" aria-hidden="true" focusable="false">
-                  {playing ? (
+                  {isPlaying ? (
                     <path d="M4 3h3v10H4zM9 3h3v10H9z" />
                   ) : (
                     <path d="M5 3l8 5-8 5z" />
                   )}
                 </svg>
-                {playing ? 'Pausar' : 'Reproducir'}
+                {isPlaying ? 'Pausar' : 'Reproducir'}
               </button>
 
               <button
                 type="button"
                 className="btn btn-outline"
-                onClick={() => seekTo(current - 10)}
-                disabled={!audioReady}
+                onClick={() => seekTo(positionMs - 10000)}
+                disabled={!ready || !connected}
               >
                 −10 s
               </button>
               <button
                 type="button"
                 className="btn btn-outline"
-                onClick={() => seekTo(current + 10)}
-                disabled={!audioReady}
+                onClick={() => seekTo(positionMs + 10000)}
+                disabled={!ready || !connected}
               >
                 +10 s
               </button>
@@ -321,7 +303,7 @@ export default function AudioPanel({ audioUrl, audioName, connected, onToast }) 
                 type="button"
                 className="btn btn-outline"
                 onClick={() => seekTo(0)}
-                disabled={!audioReady}
+                disabled={!ready || !connected}
               >
                 Reiniciar
               </button>
@@ -343,26 +325,27 @@ export default function AudioPanel({ audioUrl, audioName, connected, onToast }) 
                   }}
                   placeholder="00:00"
                   maxLength={8}
-                  disabled={!audioReady}
+                  disabled={!ready}
                 />
                 <button
                   type="button"
                   className="btn btn-text"
                   onClick={jumpToStart}
-                  disabled={!audioReady}
+                  disabled={!ready || !connected}
                 >
                   Ir
                 </button>
               </div>
             </div>
 
-            {loadError ? (
-              <p className="help is-error">
-                No se pudo cargar este audio. Prueba con un MP3, M4A o WAV.
+            {ready ? (
+              <p className="help">
+                Se reproduce en la pantalla del timer. Si el navegador lo bloquea, pulsa
+                «Activar audio» en esa pantalla.
               </p>
             ) : (
               <p className="help">
-                Se reproduce en este equipo. Conecta su salida a la mesa de sonido.
+                Abre la pantalla del timer para cargar el audio y habilitar los controles.
               </p>
             )}
           </div>
