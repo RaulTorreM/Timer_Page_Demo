@@ -1,10 +1,10 @@
-import { useCallback, useEffect, useMemo, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import FlyerLayer from '../components/FlyerLayer.jsx';
 import { useDebateState } from '../hooks/useDebateState.js';
+import { useFullscreen } from '../hooks/useFullscreen.js';
 import { useStageTransition } from '../hooks/useStageTransition.js';
 import { useNow, useTicker } from '../hooks/useTicker.js';
 import { formatClock, getTimeParts, pad2 } from '../lib/time.js';
-import { EVENT } from '../config.js';
 import '../styles/timer.css';
 
 const clockFormat = new Intl.DateTimeFormat('es-PE', {
@@ -18,9 +18,7 @@ export default function TimerPage() {
   const isRunning = state?.status === 'running';
   const clockNow = useNow(1000);
   const [cursorIdle, setCursorIdle] = useState(false);
-  const [isFullscreen, setIsFullscreen] = useState(
-    () => Boolean(document.fullscreenElement),
-  );
+  const { isFullscreen, toggleFullscreen } = useFullscreen();
   const { displayed, phase } = useStageTransition(state?.view ?? 'timer');
   const tick = useTicker(isRunning && displayed === 'timer', 30);
 
@@ -89,30 +87,6 @@ export default function TimerPage() {
     .filter(Boolean)
     .join(' ');
 
-  /* --------------------------- pantalla completa --------------------------- */
-  const toggleFullscreen = useCallback(() => {
-    if (document.fullscreenElement) {
-      document.exitFullscreen?.().catch(() => {});
-    } else {
-      document.documentElement.requestFullscreen?.().catch(() => {});
-    }
-  }, []);
-
-  useEffect(() => {
-    const onChange = () => setIsFullscreen(Boolean(document.fullscreenElement));
-    document.addEventListener('fullscreenchange', onChange);
-    return () => document.removeEventListener('fullscreenchange', onChange);
-  }, []);
-
-  useEffect(() => {
-    const onKeyDown = (event) => {
-      if (event.key.toLowerCase() !== 'f' || event.repeat) return;
-      toggleFullscreen();
-    };
-    window.addEventListener('keydown', onKeyDown);
-    return () => window.removeEventListener('keydown', onKeyDown);
-  }, [toggleFullscreen]);
-
   /* ------------------------------- cursor --------------------------------- */
   useEffect(() => {
     let timer = setTimeout(() => setCursorIdle(true), 2800);
@@ -173,7 +147,7 @@ export default function TimerPage() {
             type="button"
             className="fs-button"
             onClick={toggleFullscreen}
-            title={EVENT.hint}
+            title="Pantalla completa (F)"
             aria-label="Poner la pantalla en pantalla completa"
           >
             <svg viewBox="0 0 16 16" aria-hidden="true" focusable="false">
@@ -184,6 +158,20 @@ export default function TimerPage() {
         )}
         <span className="rail-clock">{clockFormat.format(clockNow)}</span>
       </footer>
+
+      {isFullscreen && (
+        <button
+          type="button"
+          className="fs-button is-icon is-floating"
+          onClick={toggleFullscreen}
+          title="Salir de pantalla completa (F o Esc)"
+          aria-label="Salir de pantalla completa"
+        >
+          <svg viewBox="0 0 16 16" aria-hidden="true" focusable="false">
+            <path d="M7 2v5H2M9 2v5h5M7 14v-5H2M9 14v-5h5" />
+          </svg>
+        </button>
+      )}
 
       <div className="veil" aria-hidden="true" />
     </div>

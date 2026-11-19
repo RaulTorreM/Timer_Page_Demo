@@ -68,7 +68,7 @@ Vite reenvía `/api`, `/uploads` y `/socket.io` al servidor de la API (puerto 40
 | --- | --- |
 | `F` | Entrar / salir de pantalla completa |
 
-También puedes entrar con el botón **Pantalla completa** de la esquina inferior izquierda. Al estar en pantalla completa el botón se oculta; para salir usa `F` o `Esc`.
+También puedes entrar con el botón **Pantalla completa** de la esquina inferior izquierda. Al estar en pantalla completa, el botón se reduce a un icono discreto en esa misma esquina para salir; también puedes usar `F` o `Esc`.
 
 El cursor se oculta solo después de unos segundos de inactividad en la pantalla del timer.
 
@@ -195,6 +195,7 @@ Los logos de la pared institucional viven en `client/public/logos/`.
 - Los logos se recortaron y se les retiró el fondo; el de la Cámara conserva su anillo blanco.
 - Para reemplazar un logo, sustituye el archivo en `client/public/logos/` o ajusta `name` y `src` en `client/src/logos.js`, y vuelve a compilar.
 - Se abre desde el panel con “Abrir pared de instituciones” o directamente en `/logos`.
+- En la esquina inferior izquierda hay un icono discreto para entrar o salir de pantalla completa; también funciona la tecla `F`.
 - El cursor se oculta a los 3 segundos de inactividad.
 
 ## 10. Cómo funciona el tiempo

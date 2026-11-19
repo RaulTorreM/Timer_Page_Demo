@@ -274,6 +274,60 @@
   outline-offset: 3px;
 }
 
+.fs-button.is-icon {
+  width: clamp(36px, 3.4vh, 44px);
+  height: clamp(36px, 3.4vh, 44px);
+  padding: 0;
+  justify-content: center;
+  opacity: 0.42;
+}
+
+.fs-button.is-icon svg {
+  width: 1.7em;
+  height: 1.7em;
+}
+
+.fs-button.is-icon:hover {
+  opacity: 1;
+}
+
+.is-warning .fs-button.is-icon {
+  opacity: 0.58;
+}
+
+.is-warning .fs-button.is-icon:hover {
+  opacity: 1;
+}
+
+/* El botón de salida permanece visible también sobre el flyer */
+.timer-screen .fs-button.is-floating {
+  position: fixed;
+  left: clamp(18px, 2.6vw, 40px);
+  bottom: clamp(14px, 2.4vh, 26px);
+  z-index: 6;
+  width: 38px;
+  height: 38px;
+  padding: 0;
+  justify-content: center;
+  border: 1px solid rgba(246, 241, 231, 0.26);
+  background: rgba(18, 16, 12, 0.55);
+  color: var(--bone);
+  opacity: 0.45;
+  backdrop-filter: blur(8px);
+}
+
+.timer-screen .fs-button.is-floating svg {
+  width: 18px;
+  height: 18px;
+}
+
+.timer-screen .fs-button.is-floating:hover {
+  border-color: var(--bone);
+  background: var(--bone);
+  color: var(--ink);
+  opacity: 1;
+}
+
 .is-warning .fs-button {
   border-color: rgba(240, 229, 213, 0.4);
   background: rgba(240, 229, 213, 0.05);

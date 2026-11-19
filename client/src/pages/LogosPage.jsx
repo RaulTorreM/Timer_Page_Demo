@@ -1,9 +1,11 @@
 import { useEffect, useState } from 'react';
+import { useFullscreen } from '../hooks/useFullscreen.js';
 import { INSTITUTIONS } from '../logos.js';
 import '../styles/logos.css';
 
 export default function LogosPage() {
   const [cursorIdle, setCursorIdle] = useState(false);
+  const { isFullscreen, toggleFullscreen } = useFullscreen();
 
   useEffect(() => {
     let timer = setTimeout(() => setCursorIdle(true), 3000);
@@ -59,6 +61,30 @@ export default function LogosPage() {
           </li>
         ))}
       </ul>
+
+      <button
+        type="button"
+        className="logos-fs"
+        onClick={toggleFullscreen}
+        title={
+          isFullscreen ? 'Salir de pantalla completa (F o Esc)' : 'Pantalla completa (F)'
+        }
+        aria-label={
+          isFullscreen
+            ? 'Salir de pantalla completa'
+            : 'Poner la pantalla en pantalla completa'
+        }
+      >
+        <svg viewBox="0 0 16 16" aria-hidden="true" focusable="false">
+          <path
+            d={
+              isFullscreen
+                ? 'M7 2v5H2M9 2v5h5M7 14v-5H2M9 14v-5h5'
+                : 'M2 6V2h4M14 6V2h-4M2 10v4h4M14 10v4h-4'
+            }
+          />
+        </svg>
+      </button>
     </div>
   );
 }
