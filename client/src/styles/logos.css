@@ -9,6 +9,7 @@
 
   position: relative;
   display: flex;
+  flex-direction: column;
   min-height: 100dvh;
   overflow: hidden;
   background: radial-gradient(
@@ -158,11 +159,12 @@
   flex: 1;
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
-  grid-template-rows: repeat(2, minmax(0, 1fr));
-  gap: clamp(22px, 4.2vh, 62px) clamp(24px, 5vw, 84px);
-  width: min(1260px, 100%);
+  grid-template-rows: auto auto;
+  align-content: center;
+  gap: clamp(18px, 3.6vh, 52px) clamp(22px, 5vw, 84px);
+  width: min(1240px, 100%);
   margin: 0 auto;
-  padding: clamp(34px, 7vh, 88px) clamp(44px, 7vw, 112px);
+  padding: clamp(26px, 4.4vh, 56px) clamp(30px, 5vw, 84px);
   list-style: none;
 }
 
@@ -250,7 +252,7 @@
 .logo-media img {
   width: auto;
   height: auto;
-  max-width: min(34vw, 600px);
+  max-width: min(34vw, 560px);
   max-height: clamp(150px, 30vh, 600px);
   object-fit: contain;
   filter: drop-shadow(0 24px 30px rgba(20, 18, 14, 0.22));
@@ -258,6 +260,13 @@
   animation: logo-float 12s ease-in-out infinite alternate;
   animation-delay: calc(var(--slot) * -3.2s);
   will-change: transform;
+}
+
+/* Las dos primeras marcas tienen más presencia */
+.logo-slot:nth-child(1) img,
+.logo-slot:nth-child(2) img {
+  max-width: min(43vw, 700px);
+  max-height: clamp(190px, 35vh, 700px);
 }
 
 .logo-slot:nth-child(1) img {
