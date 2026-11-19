@@ -172,8 +172,8 @@ El servidor guarda `endsAt` (momento exacto de finalización). Cada pantalla rec
 
 Al entrar en los últimos segundos configurados (10 por defecto):
 
-- todo el escenario se tiñe de rojo con un fundido,
-- el número cambia al formato de segundos gigantes con el rótulo **SEGUNDOS**,
+- todo el escenario se tiñe de un rojo vino profundo con un fundido,
+- el número pasa a tinta cálida y cambia al formato de segundos gigantes con el rótulo **SEGUNDOS**,
 - el número respira con un pulso que se acelera en los últimos 5 segundos.
 
 Al cambiar entre timer y flyer, una cortina de tinta con filo de papel recorre la pantalla y descubre el contenido nuevo; no hay cambio seco de imagen.

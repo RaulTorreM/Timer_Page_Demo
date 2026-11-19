@@ -50,7 +50,13 @@
   position: absolute;
   inset: 0;
   z-index: 0;
-  background: var(--signal);
+  background:
+    radial-gradient(
+      82% 72% at 50% 42%,
+      var(--alert) 0%,
+      var(--alert-mid) 56%,
+      var(--alert-deep) 100%
+    );
   opacity: 0;
   transition: opacity 0.55s cubic-bezier(0.4, 0, 0.2, 1);
   pointer-events: none;
@@ -63,8 +69,8 @@
 .is-warning .stage-halo {
   background: radial-gradient(
     ellipse at center,
-    rgba(255, 248, 240, 0.16),
-    rgba(255, 248, 240, 0) 62%
+    rgba(240, 229, 213, 0.05),
+    rgba(240, 229, 213, 0) 62%
   );
 }
 
@@ -194,11 +200,15 @@
 }
 
 .is-warning .stage-status {
-  color: rgba(255, 248, 240, 0.92);
+  color: rgba(240, 229, 213, 0.9);
 }
 
 .is-warning .status-dot {
-  background: var(--bone);
+  background: var(--alert-ink);
+}
+
+.is-warning .brandline .mark {
+  background: var(--alert-ink);
 }
 
 .rail-hint,
@@ -265,16 +275,16 @@
 }
 
 .is-warning .fs-button {
-  border-color: rgba(255, 248, 240, 0.55);
-  background: rgba(255, 248, 240, 0.08);
-  color: #fff8f0;
-  opacity: 0.9;
+  border-color: rgba(240, 229, 213, 0.4);
+  background: rgba(240, 229, 213, 0.05);
+  color: var(--alert-ink);
+  opacity: 0.82;
 }
 
 .is-warning .fs-button:hover {
-  border-color: #fff8f0;
-  background: #fff8f0;
-  color: var(--signal);
+  border-color: var(--alert-ink);
+  background: var(--alert-ink);
+  color: var(--alert-deep);
 }
 
 /* -------------------------------- escena --------------------------------- */
@@ -403,35 +413,38 @@
 }
 
 .is-warning .timer-number {
-  color: #fff8f0;
+  color: var(--alert-ink);
 }
 
-.is-warning .timer-label,
+.is-warning .timer-label {
+  color: rgba(240, 229, 213, 0.72);
+}
+
 .is-warning .timer-note {
-  color: #fff8f0;
+  color: rgba(240, 229, 213, 0.72);
 }
 
 .is-warning .timer-note.is-unit {
-  color: #fff8f0;
+  color: var(--alert-ink);
 }
 
 .is-warning .timer-note.is-unit::before,
 .is-warning .timer-note.is-unit::after {
-  opacity: 0.62;
+  opacity: 0.5;
 }
 
 .is-warning .rail-top {
-  border-bottom-color: rgba(255, 248, 240, 0.34);
+  border-bottom-color: rgba(240, 229, 213, 0.24);
 }
 
 .is-warning .brand-kicker,
 .is-warning .rail-hint,
 .is-warning .rail-clock {
-  color: rgba(255, 248, 240, 0.9);
+  color: rgba(240, 229, 213, 0.75);
 }
 
 .is-warning .brand-rule {
-  background: rgba(255, 248, 240, 0.5);
+  background: rgba(240, 229, 213, 0.45);
 }
 
 .is-running.is-warning .timer-number {

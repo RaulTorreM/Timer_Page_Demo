@@ -10,6 +10,12 @@
   --signal: #d01e2a;
   --signal-deep: #a3161f;
 
+  /* Alerta de escenario: rojo profundo, sin brillo de pantalla */
+  --alert: #8f1521;
+  --alert-mid: #76101a;
+  --alert-deep: #590911;
+  --alert-ink: #f0e5d5;
+
   /* Ink on paper */
   --text: #14120e;
   --muted: #5f5a50;

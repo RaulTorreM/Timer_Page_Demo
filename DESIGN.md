@@ -15,13 +15,17 @@
 | `--bone` | `#F6F1E7` | Números y texto sobre tinta. |
 | `--paper` | `#F2EDE3` | Fondo de la mesa de control. |
 | `--paper-deep` | `#E6DFD1` | Rellenos discretos (miniatura, código). |
-| `--signal` | `#D01E2A` | Alerta, marca, foco, confirmación. |
+| `--signal` | `#D01E2A` | Marca, foco, confirmación, acentos pequeños. |
+| `--alert` | `#8F1521` | Centro del campo de alerta. |
+| `--alert-mid` | `#76101A` | Medio del degradado de alerta. |
+| `--alert-deep` | `#590911` | Bordes del campo de alerta. |
+| `--alert-ink` | `#F0E5D5` | Números y texto sobre el campo de alerta. |
 | `--text` | `#14120E` | Tinta sobre papel. |
 | `--muted` | `#5F5A50` | Texto secundario sobre papel. |
 | `--stage-muted` | `rgba(246,241,231,.6)` | Texto secundario sobre tinta. |
 
 - Grano de película sutil sobre ambos fondos (`--grain`), sin degradados decorativos ni glassmorphism.
-- El rojo nunca es decoración: alerta, marca de evento, estado sin guardar y acción primaria de confirmación.
+- El rojo nunca es decoración: marca de evento, foco, estado sin guardar y acción primaria de confirmación. En alerta, el escenario usa un rojo vino profundo (`--alert`) con viñeta y tinta cálida, pensado para no deslumbrar en una sala a oscuras.
 - Bordes: 2 px de tinta para separar secciones; 1 px o punteado para datos y formularios.
 
 ## Tipografía
