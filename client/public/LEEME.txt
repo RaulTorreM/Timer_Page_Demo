@@ -1,0 +1,6 @@
+# Archivos estáticos opcionales
+#
+# Puedes copiar aquí tu flyer (por ejemplo flyer.jpg) y luego indicar
+# la ruta /flyer.jpg desde el panel de control.
+#
+# Recuerda ejecutar `npm run build` después de agregar archivos aquí.
