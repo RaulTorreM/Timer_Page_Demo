@@ -16,10 +16,11 @@ const TIME_PRESETS = [
 ];
 
 const LABEL_PRESETS = [
-  'Tiempo de participación',
+  'Iniciamos en',
+  'Eje Temático: ',
   'Tiempo de réplica',
-  'Inicia en',
-  'El debate comienza en',
+  'Receso',
+  'Mensaje Final',
 ];
 
 const padTime = (value) => String(Math.max(0, value)).padStart(2, '0');
