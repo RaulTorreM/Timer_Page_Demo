@@ -75,6 +75,90 @@ app.post('/api/upload', (req, res) => {
   });
 });
 
+/* ------------------------------ audio uploads ----------------------------- */
+
+const AUDIO_EXTENSIONS = {
+  'audio/mpeg': '.mp3',
+  'audio/mp3': '.mp3',
+  'audio/mp4': '.m4a',
+  'audio/x-m4a': '.m4a',
+  'audio/aac': '.aac',
+  'audio/wav': '.wav',
+  'audio/x-wav': '.wav',
+  'audio/ogg': '.ogg',
+  'audio/webm': '.weba',
+  'video/mp4': '.mp4',
+  'video/webm': '.webm',
+};
+
+const AUDIO_ALLOWED_EXTENSIONS = new Set([
+  '.mp3',
+  '.m4a',
+  '.mp4',
+  '.wav',
+  '.ogg',
+  '.aac',
+  '.weba',
+  '.webm',
+]);
+
+const audioUpload = multer({
+  storage: multer.diskStorage({
+    destination: (_req, _file, cb) => cb(null, UPLOADS_DIR),
+    filename: (_req, file, cb) => {
+      const originalExt = path.extname(file.originalname || '').toLowerCase();
+      const ext =
+        AUDIO_EXTENSIONS[file.mimetype] ||
+        (AUDIO_ALLOWED_EXTENSIONS.has(originalExt) ? originalExt : '.mp4');
+      const suffix = `${Date.now()}-${Math.random().toString(36).slice(2, 8)}`;
+      cb(null, `audio-${suffix}${ext}`);
+    },
+  }),
+  limits: { fileSize: 100 * 1024 * 1024, files: 1 },
+  fileFilter: (_req, file, cb) => {
+    const ext = path.extname(file.originalname || '').toLowerCase();
+    const mimeOk =
+      file.mimetype.startsWith('audio/') ||
+      file.mimetype === 'video/mp4' ||
+      file.mimetype === 'video/webm';
+    if (!mimeOk && !AUDIO_ALLOWED_EXTENSIONS.has(ext)) {
+      cb(new Error('Formato no permitido. Usa MP3, M4A, MP4, WAV, OGG o AAC.'));
+      return;
+    }
+    cb(null, true);
+  },
+});
+
+function decodeUploadName(value) {
+  const text = String(value || 'Audio');
+  try {
+    const decoded = Buffer.from(text, 'latin1').toString('utf8');
+    return decoded.includes('\uFFFD') ? text : decoded;
+  } catch {
+    return text;
+  }
+}
+
+app.post('/api/audio', (req, res) => {
+  audioUpload.single('file')(req, res, (error) => {
+    if (error) {
+      res.status(400).json({ ok: false, error: error.message });
+      return;
+    }
+    if (!req.file) {
+      res.status(400).json({ ok: false, error: 'No se recibió ningún archivo.' });
+      return;
+    }
+    const url = `/uploads/${req.file.filename}`;
+    const name = decodeUploadName(req.file.originalname)
+      .replace(/\s+/g, ' ')
+      .trim()
+      .slice(0, 160) || 'Audio';
+    store.setAudio(url, name);
+    res.json({ ok: true, url, name });
+  });
+});
+
 app.use(
   '/uploads',
   express.static(UPLOADS_DIR, {
@@ -147,6 +231,7 @@ io.on('connection', (socket) => {
   handle(socket, 'timer:add', (payload) => store.addTime(Number(payload.seconds) * 1000));
   handle(socket, 'view:set', (payload) => store.setView(payload.view));
   handle(socket, 'flyer:set', (payload) => store.setFlyer(payload.url, { show: Boolean(payload.show) }));
+  handle(socket, 'audio:set', (payload) => store.setAudio(payload.url, payload.name));
 
   socket.on('disconnect', () => {
     broadcastClients();

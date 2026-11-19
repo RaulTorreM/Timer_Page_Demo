@@ -13,6 +13,8 @@ export const DEFAULT_STATE = {
   status: 'idle', // idle | running | paused | finished
   view: 'timer', // timer | flyer
   flyerUrl: null,
+  audioUrl: null,
+  audioName: null,
   warningSeconds: 10,
   autoFlyer: true,
   autoFlyerDelaySeconds: 6,
@@ -31,7 +33,7 @@ function sanitizeLabel(value) {
   return text || DEFAULT_STATE.label;
 }
 
-function sanitizeFlyerUrl(value) {
+function sanitizeMediaUrl(value) {
   if (!value) return null;
   const text = String(value).trim();
   if (!text) return null;
@@ -39,6 +41,11 @@ function sanitizeFlyerUrl(value) {
     return text.slice(0, 600);
   }
   return null;
+}
+
+function sanitizeAudioName(value) {
+  const text = String(value ?? '').replace(/\s+/g, ' ').trim().slice(0, 160);
+  return text || 'Audio';
 }
 
 /**
@@ -63,6 +70,7 @@ export class DebateStore {
     try {
       const raw = fs.readFileSync(this.file, 'utf8');
       const parsed = JSON.parse(raw);
+      const audioUrl = sanitizeMediaUrl(parsed.audioUrl);
       return {
         ...DEFAULT_STATE,
         ...parsed,
@@ -75,7 +83,9 @@ export class DebateStore {
         warningSeconds: clamp(toNumber(parsed.warningSeconds, 10), 1, 300),
         autoFlyer: Boolean(parsed.autoFlyer),
         autoFlyerDelaySeconds: clamp(toNumber(parsed.autoFlyerDelaySeconds, 6), 1, 120),
-        flyerUrl: sanitizeFlyerUrl(parsed.flyerUrl),
+        flyerUrl: sanitizeMediaUrl(parsed.flyerUrl),
+        audioUrl,
+        audioName: audioUrl ? sanitizeAudioName(parsed.audioName) : null,
       };
     } catch {
       return { ...DEFAULT_STATE };
@@ -286,8 +296,15 @@ export class DebateStore {
   }
 
   setFlyer(url, { show = false } = {}) {
-    this.state.flyerUrl = sanitizeFlyerUrl(url);
+    this.state.flyerUrl = sanitizeMediaUrl(url);
     if (show) this.state.view = 'flyer';
     return this.#commit('flyer');
+  }
+
+  setAudio(url, name = null) {
+    const audioUrl = sanitizeMediaUrl(url);
+    this.state.audioUrl = audioUrl;
+    this.state.audioName = audioUrl ? sanitizeAudioName(name) : null;
+    return this.#commit('audio');
   }
 }

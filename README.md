@@ -1,11 +1,11 @@
 # Debate Timer · CCH
 
-Cronómetro en vivo para un evento de debate, con **dos pantallas**:
+Cronómetro en vivo para un evento de debate, con **tres pantallas**:
 
 | Pantalla | URL | Uso |
 | --- | --- | --- |
 | Timer | `/timer` | Se proyecta al público. Muestra la cuenta regresiva, alerta roja en los últimos segundos y el flyer al finalizar. |
-| Control | `/control` | Panel del operador. Configura el tiempo, inicia/pausa, reinicia, cambia al flyer y sube la imagen. |
+| Control | `/control` | Panel del operador. Configura el tiempo, inicia/pausa, reinicia, cambia al flyer, sube el flyer y reproduce audio. |
 | Logos | `/logos` | Pared de instituciones sobre papel, sin controles. |
 
 Todo se sincroniza **en tiempo real** por WebSocket (Socket.IO): lo que haces en el panel se refleja en el proyector sin recargar la página, incluso si están en equipos distintos de la misma red.
@@ -92,7 +92,17 @@ La transición también se usa al cambiar manualmente entre timer y flyer, y al 
 
 ---
 
-## 4. Personalizar el evento
+## 4. Audio
+
+El panel también funciona como reproductor de audio, con subida y control desde la misma hoja.
+
+- **Subir:** MP3, M4A, MP4 (aunque sea un video, se reproduce su audio), WAV, OGG o AAC, hasta 100 MB. El archivo se guarda en `server/uploads/` y el panel recuerda cuál está seleccionado.
+- **Reproducir / pausar:** botón principal del reproductor. También hay **−10 s**, **+10 s** y **Reiniciar**.
+- **Cambiar dónde empieza:** arrastra la barra de progreso o escribe un tiempo exacto en **“Iniciar en”** (`0:30`, `1:15` o `90` segundos) y pulsa **Ir**. Al pulsar reproducir, empieza desde ahí.
+- **Dónde suena:** se reproduce en el equipo donde está abierto el panel de control, no en la pantalla del timer. Conecta la salida de audio de ese equipo a la mesa de sonido. Si necesitas que suene desde el equipo de proyección, se puede mover a esa pantalla.
+- La reproducción es local: si recargas el panel, vuelve a pulsar reproducir. El archivo seleccionado sí queda guardado.
+
+## 5. Personalizar el evento
 
 Los textos de marca están en un solo archivo:
 
@@ -116,7 +126,7 @@ La tipografía **Schibsted Grotesk** se sirve desde el propio proyecto (paquete 
 
 ---
 
-## 5. Usar en dos computadoras (proyector + control)
+## 6. Usar en dos computadoras (proyector + control)
 
 1. Conecta ambas al mismo router.
 2. En la laptop del operador, averigua la IP local:
@@ -137,7 +147,7 @@ No hace falta internet: solo red local. El servidor debe quedar encendido durant
 
 ---
 
-## 6. Persistencia y recuperación
+## 7. Persistencia y recuperación
 
 - El estado se guarda en `server/data/state.json` (se crea solo).
 - Si el servidor se reinicia, recupera la configuración y el flyer; si el cronómetro estaba corriendo, calcula el tiempo real transcurrido y termina cuando corresponde.
@@ -145,7 +155,7 @@ No hace falta internet: solo red local. El servidor debe quedar encendido durant
 
 ---
 
-## 7. Estructura
+## 8. Estructura
 
 ```
 debate-timer-cch/
@@ -153,7 +163,7 @@ debate-timer-cch/
 │   ├── public/             Archivos estáticos opcionales (ej. flyer.jpg)
 │   └── src/
 │       ├── pages/          TimerPage.jsx · ControlPage.jsx · LogosPage.jsx
-│       ├── components/     FlyerLayer · LivePreview
+│       ├── components/     FlyerLayer · AudioPanel · LivePreview
 │       ├── hooks/          useDebateState · useTicker · useStageTransition
 │       ├── lib/            socket.js · time.js
 │       ├── styles/         global.css · timer.css · control.css · logos.css
@@ -163,7 +173,7 @@ debate-timer-cch/
 │   ├── src/index.js        API, uploads y eventos en tiempo real
 │   ├── src/store.js        Estado autoritativo y persistencia
 │   ├── data/               state.json (generado)
-│   └── uploads/            Flyers subidos
+│   └── uploads/            Flyers y audios subidos
 └── package.json            Scripts raíz (workspaces)
 ```
 
@@ -171,7 +181,7 @@ Los logos de la pared institucional viven en `client/public/logos/`.
 
 ---
 
-## 8. Página de instituciones
+## 9. Página de instituciones
 
 `/logos` es una pared con las cuatro instituciones, sin controles ni texto visible: solo las marcas, la piedra y la luz.
 
@@ -187,7 +197,7 @@ Los logos de la pared institucional viven en `client/public/logos/`.
 - Se abre desde el panel con “Abrir pared de instituciones” o directamente en `/logos`.
 - El cursor se oculta a los 3 segundos de inactividad.
 
-## 9. Cómo funciona el tiempo
+## 10. Cómo funciona el tiempo
 
 El servidor guarda `endsAt` (momento exacto de finalización). Cada pantalla recibe un snapshot con el tiempo restante y lo interpola localmente con `requestAnimationFrame`, por lo que el conteo se ve fluido entre actualizaciones. Cada 10 segundos el servidor reenvía el estado para corregir cualquier deriva.
 

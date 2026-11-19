@@ -43,7 +43,7 @@
 - Rail superior con marca + título + estado; rail inferior con pista de pantalla completa y hora de 24 h.
 - Centro: rótulo pequeño, número gigante (`26vmin` en formato reloj, `36vmin` en segundos), nota de estado.
 - Sin anillos, sin tarjetas, sin viñetas de iconos, sin bordes redondeados.
-- En alerta: el campo entero pasa a `--signal`, el número a blanco y el formato cambia a segundos con el rótulo **SEGUNDOS** flanqueado por líneas finas.
+- En alerta: el campo entero pasa a un rojo vino profundo y el número a tinta cálida; el formato cambia a segundos con el rótulo **SEGUNDOS** flanqueado por líneas finas.
 - Flyer: la imagen se contiene a pantalla completa sobre tinta, con un asentamiento lento de escala (1.05 → 1).
 
 ### Mesa de control (`/control`)
@@ -52,6 +52,12 @@
 - Sin tarjetas: los bloques son secciones de una misma hoja. El único objeto sólido es el **monitor** de tinta con la proyección y el transporte.
 - Datos en líneas de puntos (`.ledger`), formularios con subrayado, presets en sellos rectangulares.
 - El campo de duración es un componedor tipográfico: dos cifras grandes separadas por dos puntos.
+
+### Audio
+
+- Reproductor dentro de la misma hoja: nombre y estado, tiempo actual grande, duración pequeña y barra de 2 px con pulgar rojo.
+- Botón principal en tinta; −10 s, +10 s y Reiniciar; campo **Iniciar en** con filete inferior para saltar a un tiempo exacto.
+- La reproducción es local al panel; el archivo vive en el servidor y se recuerda entre sesiones.
 
 ## Movimiento
 

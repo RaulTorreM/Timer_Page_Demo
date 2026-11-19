@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import AudioPanel from '../components/AudioPanel.jsx';
 import LivePreview from '../components/LivePreview.jsx';
 import { useDebateState } from '../hooks/useDebateState.js';
 import { useNow, useTicker } from '../hooks/useTicker.js';
@@ -555,6 +556,13 @@ export default function ControlPage() {
                 </div>
               </div>
             </section>
+
+            <AudioPanel
+              audioUrl={state.audioUrl}
+              audioName={state.audioName}
+              connected={connected}
+              onToast={pushToast}
+            />
           </main>
 
           {/* ------------------------------ columna monitor ----------------------------- */}
