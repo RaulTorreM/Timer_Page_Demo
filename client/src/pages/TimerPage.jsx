@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo, useState } from 'react';
 import FlyerLayer from '../components/FlyerLayer.jsx';
 import { useDebateState } from '../hooks/useDebateState.js';
 import { useStageTransition } from '../hooks/useStageTransition.js';
@@ -18,6 +18,9 @@ export default function TimerPage() {
   const isRunning = state?.status === 'running';
   const clockNow = useNow(1000);
   const [cursorIdle, setCursorIdle] = useState(false);
+  const [isFullscreen, setIsFullscreen] = useState(
+    () => Boolean(document.fullscreenElement),
+  );
   const { displayed, phase } = useStageTransition(state?.view ?? 'timer');
   const tick = useTicker(isRunning && displayed === 'timer', 30);
 
@@ -87,18 +90,28 @@ export default function TimerPage() {
     .join(' ');
 
   /* --------------------------- pantalla completa --------------------------- */
+  const toggleFullscreen = useCallback(() => {
+    if (document.fullscreenElement) {
+      document.exitFullscreen?.().catch(() => {});
+    } else {
+      document.documentElement.requestFullscreen?.().catch(() => {});
+    }
+  }, []);
+
+  useEffect(() => {
+    const onChange = () => setIsFullscreen(Boolean(document.fullscreenElement));
+    document.addEventListener('fullscreenchange', onChange);
+    return () => document.removeEventListener('fullscreenchange', onChange);
+  }, []);
+
   useEffect(() => {
     const onKeyDown = (event) => {
       if (event.key.toLowerCase() !== 'f' || event.repeat) return;
-      if (document.fullscreenElement) {
-        document.exitFullscreen?.().catch(() => {});
-      } else {
-        document.documentElement.requestFullscreen?.().catch(() => {});
-      }
+      toggleFullscreen();
     };
     window.addEventListener('keydown', onKeyDown);
     return () => window.removeEventListener('keydown', onKeyDown);
-  }, []);
+  }, [toggleFullscreen]);
 
   /* ------------------------------- cursor --------------------------------- */
   useEffect(() => {
@@ -127,7 +140,7 @@ export default function TimerPage() {
       <div className="alert-wash" aria-hidden="true" />
       <div className="grain" aria-hidden="true" />
 
-      {/* <header className="rail rail-top">
+      <header className="rail rail-top">
         <div className="brandline">
           <span className="mark" aria-hidden="true" />
           <span className="brand-name">{EVENT.name}</span>
@@ -141,7 +154,7 @@ export default function TimerPage() {
             {statusText}
           </span>
         </div>
-      </header> */}
+      </header>
 
       <main className="stage" aria-label="Pantalla del cronómetro">
         {isFlyer ? (
@@ -171,7 +184,20 @@ export default function TimerPage() {
       </main>
 
       <footer className="rail rail-bottom">
-        <span className="rail-hint">{EVENT.hint}</span>
+        {!isFullscreen && (
+          <button
+            type="button"
+            className="fs-button"
+            onClick={toggleFullscreen}
+            title={EVENT.hint}
+            aria-label="Poner la pantalla en pantalla completa"
+          >
+            <svg viewBox="0 0 16 16" aria-hidden="true" focusable="false">
+              <path d="M2 6V2h4M14 6V2h-4M2 10v4h4M14 10v4h-4" />
+            </svg>
+            <span>Pantalla completa</span>
+          </button>
+        )}
         <span className="rail-clock">{clockFormat.format(clockNow)}</span>
       </footer>
 

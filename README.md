@@ -66,6 +66,8 @@ Vite reenvía `/api`, `/uploads` y `/socket.io` al servidor de la API (puerto 40
 | --- | --- |
 | `F` | Entrar / salir de pantalla completa |
 
+También puedes entrar con el botón **Pantalla completa** de la esquina inferior izquierda. Al estar en pantalla completa el botón se oculta; para salir usa `F` o `Esc`.
+
 El cursor se oculta solo después de unos segundos de inactividad en la pantalla del timer.
 
 ---

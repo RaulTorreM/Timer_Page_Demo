@@ -212,10 +212,69 @@
 }
 
 .rail-clock {
+  margin-left: auto;
   font-variant-numeric: tabular-nums;
   letter-spacing: 0.16em;
   color: var(--stage-text);
   opacity: 0.82;
+}
+
+.fs-button {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.7em;
+  padding: 0.58em 0.88em;
+  border: 1px solid rgba(246, 241, 231, 0.32);
+  border-radius: 2px;
+  background: rgba(246, 241, 231, 0.04);
+  color: var(--stage-text);
+  font-size: clamp(9px, 1.02vmin, 20px);
+  font-weight: 650;
+  letter-spacing: 0.18em;
+  line-height: 1;
+  text-transform: uppercase;
+  cursor: pointer;
+  opacity: 0.72;
+  transition:
+    opacity 0.18s ease,
+    background 0.18s ease,
+    border-color 0.18s ease,
+    color 0.18s ease;
+}
+
+.fs-button svg {
+  width: 1.15em;
+  height: 1.15em;
+  flex: none;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 1.6;
+  stroke-linecap: square;
+}
+
+.fs-button:hover {
+  opacity: 1;
+  border-color: var(--bone);
+  background: var(--bone);
+  color: var(--ink);
+}
+
+.fs-button:focus-visible {
+  outline: 2px solid currentColor;
+  outline-offset: 3px;
+}
+
+.is-warning .fs-button {
+  border-color: rgba(255, 248, 240, 0.55);
+  background: rgba(255, 248, 240, 0.08);
+  color: #fff8f0;
+  opacity: 0.9;
+}
+
+.is-warning .fs-button:hover {
+  border-color: #fff8f0;
+  background: #fff8f0;
+  color: var(--signal);
 }
 
 /* -------------------------------- escena --------------------------------- */
@@ -531,7 +590,7 @@
 
 @media (max-aspect-ratio: 1/1) {
   .timer-number {
-    font-size: clamp(5rem, 30vw, 30rem);
+    font-size: clamp(5rem, 29vw, 30rem);
   }
 
   .timer-number.is-long {
@@ -560,12 +619,22 @@
   .rail-bottom {
     padding-bottom: 18px;
   }
+}
 
-  .timer-number {
-    font-size: clamp(4.6rem, 32vw, 20rem);
+@media (max-width: 420px) {
+  .fs-button {
+    width: 40px;
+    height: 40px;
+    padding: 0;
+    justify-content: center;
   }
 
-  .is-seconds .timer-number {
-    font-size: clamp(6.5rem, 48vw, 24rem);
+  .fs-button svg {
+    width: 15px;
+    height: 15px;
+  }
+
+  .fs-button span {
+    display: none;
   }
 }
