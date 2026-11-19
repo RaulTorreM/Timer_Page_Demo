@@ -1,7 +1,7 @@
 export const EVENT = {
   name: 'Debate Oficial',
   kicker: 'Cronómetro de sala',
-  hint: 'F — Pantalla completa',
+  hint: '',
 };
 
 export const CONTROL = {
