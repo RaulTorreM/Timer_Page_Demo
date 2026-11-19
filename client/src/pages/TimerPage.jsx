@@ -127,7 +127,7 @@ export default function TimerPage() {
       <div className="alert-wash" aria-hidden="true" />
       <div className="grain" aria-hidden="true" />
 
-      <header className="rail rail-top">
+      {/* <header className="rail rail-top">
         <div className="brandline">
           <span className="mark" aria-hidden="true" />
           <span className="brand-name">{EVENT.name}</span>
@@ -141,7 +141,7 @@ export default function TimerPage() {
             {statusText}
           </span>
         </div>
-      </header>
+      </header> */}
 
       <main className="stage" aria-label="Pantalla del cronómetro">
         {isFlyer ? (
