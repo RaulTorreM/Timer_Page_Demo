@@ -140,21 +140,7 @@ export default function TimerPage() {
       <div className="alert-wash" aria-hidden="true" />
       <div className="grain" aria-hidden="true" />
 
-      <header className="rail rail-top">
-        <div className="brandline">
-          <span className="mark" aria-hidden="true" />
-          <span className="brand-name">{EVENT.name}</span>
-          <span className="brand-rule" aria-hidden="true" />
-          <span className="brand-kicker">{EVENT.kicker}</span>
-        </div>
-
-        <div className="rail-status">
-          <span className={`stage-status ${!connected ? 'is-offline' : ''}`}>
-            <span className="status-dot" aria-hidden="true" />
-            {statusText}
-          </span>
-        </div>
-      </header>
+      
 
       <main className="stage" aria-label="Pantalla del cronómetro">
         {isFlyer ? (
